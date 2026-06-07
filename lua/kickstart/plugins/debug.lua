@@ -93,3 +93,13 @@ require('dap-go').setup {
     detached = vim.fn.has 'win32' == 0,
   },
 }
+
+local dap = require('dap')
+
+dap.adapters.python = {
+  type = 'executable',
+  command = '/home/pi/.local/share/nvim/mason/bin/debugpy-adapter',
+  options = {
+    initialize_timeout_sec = 20,
+  },
+}

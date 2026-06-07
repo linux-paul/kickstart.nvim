@@ -97,6 +97,14 @@ do
   --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
   vim.g.mapleader = ' '
   vim.g.maplocalleader = ' '
+  
+  -- clipboard add on chatgpt
+  -- Clipboard via OSC52 (SSH-friendly)
+  vim.g.clipboard = 'osc52'
+  vim.opt.clipboard = 'unnamedplus'
+  
+  -- venv from chatgpt
+  vim.g.python3_host_prog = vim.fn.expand("~/.venvs/nvim/bin/python")
 
   -- Set to true if you have a Nerd Font installed and selected in the terminal
   vim.g.have_nerd_font = false
@@ -688,7 +696,7 @@ do
   local servers = {
     -- clangd = {},
     -- gopls = {},
-    -- pyright = {},
+    pyright = {},
     -- rust_analyzer = {},
     --
     -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -700,35 +708,31 @@ do
     stylua = {}, -- Used to format Lua code
 
     -- Special Lua Config, as recommended by neovim help docs
-    lua_ls = {
+	lua_ls = {
       on_init = function(client)
-        client.server_capabilities.documentFormattingProvider = false -- Disable formatting (formatting is done by stylua)
-
-        if client.workspace_folders then
-          local path = client.workspace_folders[1].name
-          if path ~= vim.fn.stdpath 'config' and (vim.uv.fs_stat(path .. '/.luarc.json') or vim.uv.fs_stat(path .. '/.luarc.jsonc')) then return end
-        end
-
-        client.config.settings.Lua = vim.tbl_deep_extend('force', client.config.settings.Lua, {
-          runtime = {
-            version = 'LuaJIT',
-            path = { 'lua/?.lua', 'lua/?/init.lua' },
-          },
-          workspace = {
-            checkThirdParty = false,
-            -- NOTE: this is a lot slower and will cause issues when working on your own configuration.
-            --  See https://github.com/neovim/nvim-lspconfig/issues/3189
-            library = vim.tbl_extend('force', vim.api.nvim_get_runtime_file('', true), {
-              '${3rd}/luv/library',
-              '${3rd}/busted/library',
-            }),
-          },
-        })
+        client.server_capabilities.documentFormattingProvider = false
       end,
-      ---@type lspconfig.settings.lua_ls
+
       settings = {
         Lua = {
-          format = { enable = false }, -- Disable formatting (formatting is done by stylua)
+          runtime = {
+            version = 'LuaJIT',
+          },
+
+          diagnostics = {
+            globals = { 'vim' },
+          },
+
+          workspace = {
+            checkThirdParty = false,
+            maxPreload = 50,
+            preloadFileSize = 20,
+            library = {},
+          },
+
+          telemetry = {
+            enable = false,
+          },
         },
       },
     },
@@ -741,8 +745,65 @@ do
     gh 'WhoIsSethDaniel/mason-tool-installer.nvim',
   }
 
+  vim.pack.add {
+    gh 'hrsh7th/nvim-cmp',
+    gh 'hrsh7th/cmp-nvim-lsp',
+    gh 'L3MON4D3/LuaSnip',
+  }
+
+
   -- Automatically install LSPs and related tools to stdpath for Neovim
-  require('mason').setup {}
+  -- require('mason').setup {}
+  require("mason").setup()
+
+  require("mason-lspconfig").setup({
+    ensure_installed = { "pyright" },
+  })
+  
+  local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+  vim.lsp.config('pyright', {
+    capabilities = capabilities,
+	settings = {
+      python = {
+        analysis = {
+          diagnosticMode = "openFilesOnly",
+        },
+      },
+    },
+  })
+
+  vim.lsp.enable('pyright')
+    
+  local cmp = require('cmp')
+
+  cmp.setup({
+    snippet = {
+      expand = function(args)
+        require('luasnip').lsp_expand(args.body)
+      end,
+    },
+
+    mapping = cmp.mapping.preset.insert({
+      ['<Tab>'] = cmp.mapping.select_next_item(),
+      ['<S-Tab>'] = cmp.mapping.select_prev_item(),
+      ['<CR>'] = cmp.mapping.confirm({ select = false }),
+    }),
+
+    sources = {
+      { name = 'nvim_lsp' },
+    },
+  })
+  
+  
+  
+  
+
+--  require("mason-lspconfig").setup_handlers({
+--    function(server_name)
+--      require("lspconfig")[server_name].setup({})
+--    end,
+--  })
 
   -- Ensure the servers and tools above are installed
   --
@@ -960,12 +1021,12 @@ do
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug'
+  require 'kickstart.plugins.debug'
   -- require 'kickstart.plugins.indent_line'
   -- require 'kickstart.plugins.lint'
-  -- require 'kickstart.plugins.autopairs'
-  -- require 'kickstart.plugins.neo-tree'
-  -- require 'kickstart.plugins.gitsigns' -- adds gitsigns recommended keymaps
+  require 'kickstart.plugins.autopairs'
+  require 'kickstart.plugins.neo-tree'
+  require 'kickstart.plugins.gitsigns' -- adds gitsigns recommended keymaps
 
   -- NOTE: You can add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --
@@ -975,3 +1036,5 @@ end
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+
+

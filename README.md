@@ -1,5 +1,37 @@
 # kickstart.nvim
 
+## My Adaption
+
+This is an adaption of the current neowim kickstart config, having a lightweigt
+Python dev env for the usage on low memory boards like Pi Zero 2W.
+The Config provides:
+
+* Syntax check
+* Autocompleation
+* Debugger
+* Fs-Tree support
+* Win ssh clipboard support (not putty)
+
+Python venv requirements see requirements.txt
+OS requirements, install golang-go and npm first.
+
+Kickstart uses neovim v0.12.x at the moment, which uses vim.pack instead of lazy,
+therefor it will not work with erlier versions.
+Follow the nwim install instuctions below, but use this command to clone this repo
+```sh
+git clone https://github.com/linux-paul/kickstart.nvim.git "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim
+```
+
+It could be necesarry to have a 1GB swap for installation purposes.
+
+Files changed:
+
+* ~/.config/nvim/init.lua
+* ~/.config/nvim/lua/kickstart/plugins/debug.lua
+
+Have Fun :)
+
+
 ## Introduction
 
 A starting point for Neovim that is:
