@@ -750,8 +750,9 @@ do
     gh 'hrsh7th/cmp-nvim-lsp',
     gh 'L3MON4D3/LuaSnip',
   }
-
-
+  
+  vim.cmd("packadd nvim-lspconfig")
+  
   -- Automatically install LSPs and related tools to stdpath for Neovim
   -- require('mason').setup {}
   require("mason").setup()
@@ -761,19 +762,32 @@ do
   })
   
   local capabilities = require("cmp_nvim_lsp").default_capabilities()
+  capabilities.offsetEncoding = { "utf-8" }
 
   vim.lsp.config('pyright', {
     capabilities = capabilities,
+	root_dir = require("lspconfig.util").root_pattern(
+      "pyproject.toml",
+      "pyrightconfig.json",
+      ".git"
+    ),
 	settings = {
       python = {
         analysis = {
-          diagnosticMode = "openFilesOnly",
+--          diagnosticMode = "openFilesOnly",
+          typeCheckingMode = "basic",    -- check
+          diagnosticMode = "workspace",  -- check:
         },
       },
     },
   })
 
   vim.lsp.enable('pyright')
+  
+  vim.lsp.config('ruff', {
+    capabilities = capabilities,
+  })
+  
     
   local cmp = require('cmp')
 
