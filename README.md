@@ -7,7 +7,7 @@ Python dev env for the usage on low memory boards like Pi Zero 2W.
 The Config provides:
 
 * Syntax check
-* Autocompleation
+* Autocompletion
 * Debugger
 * Fs-Tree support
 * Win ssh clipboard support (not putty)
